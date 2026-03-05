@@ -1,0 +1,28 @@
+<resources>
+    <string name="app_name">FlashPro</string>
+    <string name="hamburger_icon">Hamburger_icon</string>
+    <string name="flash_light_alert">Flash Light Alert</string>
+    <string name="information_icon">information icon</string>
+    <string name="incoming_call_icon">incoming call icon</string>
+    <string name="incoming_calls">Incoming\nCalls</string>
+    <string name="enable">Enable</string>
+    <string name="sms_icon">SMS</string>
+    <string name="sms">SMS</string>
+    <string name="flashing_type">Flashing\nType</string>
+    <string name="flash_icon">flash icon</string>
+    <string name="app_selection">App\nSelection</string>
+    <string name="app_selection_icon">app selection icon</string>
+    <string name="speed_meter">speed meter</string>
+    <string name="select">Select</string>
+    <string name="_0_ms">0 ms</string>
+    <string name="_30_ms">30 ms</string>
+    <string name="flashing_speed">Flashing Speed</string>
+    <string name="arrow_icon">arrow icon</string>
+    <string name="rate_this_app">Rate this App</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="app_notification">App Notification</string>
+    <string name="share_this_app">Share this App</string>
+    <string name="exit_app">Exit App</string>
+    <string name="flash_light_alert_text">Flash Light Alert</string>
+    <string name="power_off_icon">power off icon</string>
+</resources>

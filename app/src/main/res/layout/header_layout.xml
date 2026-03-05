@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="250dp"
+    android:orientation="vertical"
+    android:gravity="bottom"
+    >
+
+    <ImageView
+        android:id="@+id/alertImage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/flash_light_alert"
+        android:src="@mipmap/flash_light_alert"
+        android:scaleType="centerCrop"
+        android:layout_marginHorizontal="30dp"/>
+
+    <TextView
+        android:id="@+id/flashLightAlert"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/flash_light_alert_text"
+        android:textColor="@color/switch_background"
+        android:layout_marginTop="10dp"
+        android:alpha=".7"
+        android:textStyle="bold"
+        android:textSize="24sp"
+        android:layout_marginHorizontal="30dp"
+        android:layout_marginBottom="70dp"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/black"
+        />
+
+</LinearLayout>
