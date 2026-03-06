@@ -5,6 +5,8 @@ import android.content.pm.PackageManager
 import android.hardware.camera2.CameraManager
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.Toast
@@ -23,7 +25,19 @@ class MainActivity : AppCompatActivity() {
     private var cameraId: String? = null
     private val CAMERA_REQUEST = 100
     private var isFlashOn = false
+    private lateinit var flashBtn: ImageButton
+    private lateinit var flashBtnCard: MaterialCardView
 
+    // Callback to listen for torch mode changes (system-wide)
+    private val torchCallback = object : CameraManager.TorchCallback() {
+        override fun onTorchModeChanged(cameraId: String, enabled: Boolean) {
+            super.onTorchModeChanged(cameraId, enabled)
+            if (cameraId == this@MainActivity.cameraId) {
+                isFlashOn = enabled
+                updateButtonImage(flashBtn, flashBtnCard)
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,56 +57,39 @@ class MainActivity : AppCompatActivity() {
         }
         navigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
-                R.id.rating -> {
-                    toast("Rating soon")
-                }
-
-                R.id.privacy -> {
-                    toast("Privacy Soon")
-                }
-
-                R.id.notification -> {
-                    toast("Notification Soon")
-                }
-
-                R.id.share -> {
-                    toast("Sharing Soon")
-                }
-
-                R.id.exit -> {
-                    finish()
-                }
+                R.id.rating -> toast("Rating soon")
+                R.id.privacy -> toast("Privacy Soon")
+                R.id.notification -> toast("Notification Soon")
+                R.id.share -> toast("Sharing Soon")
+                R.id.exit -> finish()
             }
-
             drawerLayout.closeDrawer(GravityCompat.START)
-
             true
         }
 
         cameraManager = getSystemService(CAMERA_SERVICE) as CameraManager
         cameraId = cameraManager.cameraIdList.firstOrNull()
 
-        val flashBtnCard = findViewById<MaterialCardView>(R.id.torch_btn)
-        val flashBtn = findViewById<ImageButton>(R.id.torchBtnImage)
-        updateButtonImage(flashBtn, flashBtnCard)
+        flashBtnCard = findViewById(R.id.torch_btn)
+        flashBtn = findViewById(R.id.torchBtnImage)
+
+        // Register the callback to sync with system flash state
+        cameraManager.registerTorchCallback(torchCallback, Handler(Looper.getMainLooper()))
 
         flashBtn.setOnClickListener {
             if (hasCameraPermission()) {
-
-                isFlashOn = !isFlashOn
-                toggleFlashLight(isFlashOn)
-                updateButtonImage(flashBtn, flashBtnCard)
+                val nextState = !isFlashOn
+                toggleFlashLight(nextState)
+                // Show toast ONLY on button click
+                if (nextState) toast("Torch On") else toast("Torch Off")
             } else {
                 requestCameraPermission()
             }
         }
-
     }
 
     private fun toggleFlashLight(state: Boolean) {
         try {
-//            if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.M){  //SDK also greater tha 24
-//            }
             cameraManager.setTorchMode(cameraId ?: return, state)
         } catch (e: Exception) {
             toast("Flash Light not Supported")
@@ -103,31 +100,20 @@ class MainActivity : AppCompatActivity() {
         if (isFlashOn) {
             button.setImageResource(R.mipmap.power_on)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                cardView.outlineSpotShadowColor =
-                    ContextCompat.getColor(this, R.color.elevate_color_on)
-
-                cardView.outlineAmbientShadowColor =
-                    ContextCompat.getColor(this, R.color.elevate_color_on)
+                cardView.outlineSpotShadowColor = ContextCompat.getColor(this, R.color.elevate_color_on)
+                cardView.outlineAmbientShadowColor = ContextCompat.getColor(this, R.color.elevate_color_on)
             }
-            toast("Flash Turned ON")
         } else {
             button.setImageResource(R.mipmap.power_off)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                cardView.outlineSpotShadowColor =
-                    ContextCompat.getColor(this, R.color.elevate_color)
-
-                cardView.outlineAmbientShadowColor =
-                    ContextCompat.getColor(this, R.color.elevate_color)
+                cardView.outlineSpotShadowColor = ContextCompat.getColor(this, R.color.elevate_color)
+                cardView.outlineAmbientShadowColor = ContextCompat.getColor(this, R.color.elevate_color)
             }
-            toast("Flash Turned OFF")
         }
     }
 
     private fun hasCameraPermission(): Boolean =
-        ContextCompat.checkSelfPermission(
-            this,
-            Manifest.permission.CAMERA
-        ) == PackageManager.PERMISSION_GRANTED
+        ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
 
     private fun requestCameraPermission() {
         ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), CAMERA_REQUEST)
@@ -147,6 +133,12 @@ class MainActivity : AppCompatActivity() {
             }
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults, deviceId)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // Unregister callback to prevent memory leaks
+        cameraManager.unregisterTorchCallback(torchCallback)
     }
 
     fun toast(message: String) {
