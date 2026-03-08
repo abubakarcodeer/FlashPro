@@ -11,7 +11,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:contentDescription="@string/flash_light_alert"
-        android:src="@mipmap/flash_light_alert"
+        android:src="@drawable/flash_light_alert"
         android:scaleType="centerCrop"
         android:layout_marginHorizontal="30dp"/>
 

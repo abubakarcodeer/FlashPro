@@ -98,13 +98,13 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateButtonImage(button: ImageButton, cardView: MaterialCardView) {
         if (isFlashOn) {
-            button.setImageResource(R.mipmap.power_on)
+            button.setImageResource(R.drawable.power_on)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 cardView.outlineSpotShadowColor = ContextCompat.getColor(this, R.color.elevate_color_on)
                 cardView.outlineAmbientShadowColor = ContextCompat.getColor(this, R.color.elevate_color_on)
             }
         } else {
-            button.setImageResource(R.mipmap.power_off)
+            button.setImageResource(R.drawable.power_off)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 cardView.outlineSpotShadowColor = ContextCompat.getColor(this, R.color.elevate_color)
                 cardView.outlineAmbientShadowColor = ContextCompat.getColor(this, R.color.elevate_color)
