@@ -4,6 +4,7 @@
     android:layout_height="250dp"
     android:orientation="vertical"
     android:gravity="bottom"
+    android:background="?attr/colorPrimary"
     >
 
     <ImageView
@@ -20,9 +21,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/flash_light_alert_text"
-        android:textColor="@color/switch_background"
         android:layout_marginTop="10dp"
-        android:alpha=".7"
         android:textStyle="bold"
         android:textSize="24sp"
         android:layout_marginHorizontal="30dp"

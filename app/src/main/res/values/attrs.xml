@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Define a custom attribute -->
+    <attr name="viewColor" format="color"/>
+    <attr name="seekbar_thumb_color" format="color"/>
+    <attr name="seekbar_track_color" format="color"/>
+    <attr name="seekbar_track_background_color" format="color"/>
+    <attr name="navigation_background" format="color"/>
+</resources>

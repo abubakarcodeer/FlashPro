@@ -5,7 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
+    android:background="?attr/colorPrimary"
     tools:context=".MainActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -77,7 +77,8 @@
             android:layout_marginHorizontal="10dp"
             android:layout_marginTop="50dp"
             android:columnCount="2"
-            android:padding="10dp"
+            android:paddingTop="12dp"
+            android:paddingHorizontal="22dp"
             android:rowCount="3"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -92,6 +93,7 @@
                 android:layout_marginEnd="5dp"
                 android:layout_marginBottom="5dp"
                 android:elevation="10dp"
+               app:cardBackgroundColor="?attr/cardBackgroundColor"
                 app:cardCornerRadius="15dp">
 
                 <androidx.constraintlayout.widget.ConstraintLayout
@@ -125,7 +127,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
                         android:layout_marginTop="10dp"
-                        android:background="#3D9B9A9A"
+                        android:background="?attr/viewColor"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/textView" />
@@ -146,6 +148,8 @@
                         android:layout_height="wrap_content"
                         android:layout_margin="4dp"
                         android:checked="true"
+                        android:trackTint="@color/switch_background"
+                        android:thumbTint="#848484"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/view"
                         tools:ignore="UseSwitchCompatOrMaterialXml" />
@@ -161,6 +165,7 @@
                 android:layout_marginEnd="2dp"
                 android:layout_marginBottom="5dp"
                 android:elevation="10dp"
+                app:cardBackgroundColor="?attr/cardBackgroundColor"
                 app:cardCornerRadius="15dp">
 
                 <androidx.constraintlayout.widget.ConstraintLayout
@@ -195,7 +200,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
                         android:layout_marginTop="22dp"
-                        android:background="#3D9B9A9A"
+                        android:background="?attr/viewColor"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/textView3" />
@@ -216,6 +221,8 @@
                         android:layout_height="wrap_content"
                         android:layout_margin="3dp"
                         android:checked="true"
+                        android:trackTint="@color/switch_background"
+                        android:thumbTint="#848484"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/view2"
                         tools:ignore="UseSwitchCompatOrMaterialXml" />
@@ -230,6 +237,7 @@
                 android:layout_marginTop="10dp"
                 android:layout_marginEnd="5dp"
                 android:elevation="10dp"
+                app:cardBackgroundColor="?attr/cardBackgroundColor"
                 app:cardCornerRadius="15dp">
 
                 <androidx.constraintlayout.widget.ConstraintLayout
@@ -263,7 +271,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
                         android:layout_marginTop="10dp"
-                        android:background="#3D9B9A9A"
+                        android:background="?attr/viewColor"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/textView5" />
@@ -298,6 +306,7 @@
                 android:layout_marginTop="10dp"
                 android:layout_marginEnd="2dp"
                 android:elevation="10dp"
+                app:cardBackgroundColor="?attr/cardBackgroundColor"
                 app:cardCornerRadius="15dp">
 
                 <androidx.constraintlayout.widget.ConstraintLayout
@@ -331,7 +340,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
                         android:layout_marginTop="10dp"
-                        android:background="#3D9B9A9A"
+                        android:background="?attr/viewColor"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/textView7" />
@@ -368,6 +377,7 @@
                 android:layout_marginEnd="5dp"
                 android:layout_marginBottom="5dp"
                 android:elevation="10dp"
+                app:cardBackgroundColor="?attr/cardBackgroundColor"
                 app:cardCornerRadius="15dp">
 
                 <androidx.constraintlayout.widget.ConstraintLayout
@@ -378,11 +388,10 @@
                     <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="5dp"
                         android:contentDescription="@string/speed_meter"
                         android:src="@drawable/speed_meter"
+                        android:layout_marginEnd="20dp"
                         app:layout_constraintEnd_toStartOf="@+id/textView9"
-                        app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
                     <TextView
@@ -401,7 +410,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
                         android:layout_marginTop="20dp"
-                        android:background="#3D9B9A9A"
+                        android:background="?attr/viewColor"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/textView9" />
@@ -413,6 +422,9 @@
                         android:layout_marginHorizontal="15dp"
                         android:layout_marginTop="10dp"
                         android:max="30"
+                        android:thumbTint="?attr/seekbar_thumb_color"
+                        android:progressTint="?attr/seekbar_track_color"
+                        android:progressBackgroundTint="?attr/seekbar_track_background_color"
                         android:progress="5"
                         app:layout_constraintTop_toBottomOf="@+id/view5" />
 

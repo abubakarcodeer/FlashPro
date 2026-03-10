@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">FlashPro</string>
     <string name="hamburger_icon">Hamburger_icon</string>
-    <string name="flash_light_alert">Flash Light Alert</string>
+    <string name="flash_light_alert">Flash Light</string>
     <string name="information_icon">information icon</string>
     <string name="incoming_call_icon">incoming call icon</string>
     <string name="incoming_calls">Incoming\nCalls</string>
@@ -23,6 +23,6 @@
     <string name="app_notification">App Notification</string>
     <string name="share_this_app">Share this App</string>
     <string name="exit_app">Exit App</string>
-    <string name="flash_light_alert_text">Flash Light Alert</string>
+    <string name="flash_light_alert_text">Flash Light</string>
     <string name="power_off_icon">power off icon</string>
 </resources>
