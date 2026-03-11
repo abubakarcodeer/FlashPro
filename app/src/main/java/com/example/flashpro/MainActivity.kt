@@ -1,6 +1,7 @@
 package com.example.flashpro
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.hardware.camera2.CameraManager
 import android.os.Build
@@ -12,12 +13,21 @@ import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.cardview.widget.CardView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.navigation.NavigationView
+import android.app.NotificationManager
+import android.content.Intent
+import android.provider.Settings
+import android.widget.RadioButton
+import android.widget.RadioGroup
+import android.widget.SeekBar
+import android.widget.Switch
+import androidx.appcompat.app.AlertDialog
 
 class MainActivity : AppCompatActivity() {
     private lateinit var drawerLayout: DrawerLayout
@@ -27,6 +37,19 @@ class MainActivity : AppCompatActivity() {
     private var isFlashOn = false
     private lateinit var flashBtn: ImageButton
     private lateinit var flashBtnCard: MaterialCardView
+    private lateinit var frequencySeekBar: SeekBar
+    private val handler = Handler(Looper.getMainLooper())
+    private var flashRunnable: Runnable? = null
+    private var isFlashing = false
+    private var blinkInterval: Long = 500   // default 500ms
+    private var flashMode = "NORMAL" // NORMAL or RHYTHM
+
+    @SuppressLint("UseSwitchCompatOrMaterialCode")
+    private lateinit var callSwitch: Switch
+
+    @SuppressLint("UseSwitchCompatOrMaterialCode")
+    private lateinit var messageSwitch: Switch
+    private lateinit var notificationManager: NotificationManager
 
     // Callback to listen for torch mode changes (system-wide)
     private val torchCallback = object : CameraManager.TorchCallback() {
@@ -34,7 +57,10 @@ class MainActivity : AppCompatActivity() {
             super.onTorchModeChanged(cameraId, enabled)
             if (cameraId == this@MainActivity.cameraId) {
                 isFlashOn = enabled
-                updateButtonImage(flashBtn, flashBtnCard)
+                // Only update UI automatically in NORMAL mode to avoid flickering in RHYTHM mode
+                if (flashMode == "NORMAL") {
+                    updateButtonImage(flashBtn, flashBtnCard)
+                }
             }
         }
     }
@@ -43,6 +69,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        //Handle the Drawer layout and NavigationView
         drawerLayout = findViewById(R.id.main)
         val navigationView = findViewById<NavigationView>(R.id.navigationView)
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
@@ -52,6 +79,7 @@ class MainActivity : AppCompatActivity() {
 
         val menuIcon = findViewById<ImageView>(R.id.menuIcon)
 
+        // Handle Menu Icon Click
         menuIcon.setOnClickListener {
             drawerLayout.openDrawer(GravityCompat.START)
         }
@@ -59,7 +87,6 @@ class MainActivity : AppCompatActivity() {
             when (menuItem.itemId) {
                 R.id.rating -> toast("Rating soon")
                 R.id.privacy -> toast("Privacy Soon")
-                R.id.notification -> toast("Notification Soon")
                 R.id.share -> toast("Sharing Soon")
                 R.id.exit -> finish()
             }
@@ -67,6 +94,7 @@ class MainActivity : AppCompatActivity() {
             true
         }
 
+        //Handle Camera Services
         cameraManager = getSystemService(CAMERA_SERVICE) as CameraManager
         cameraId = cameraManager.cameraIdList.firstOrNull()
 
@@ -78,13 +106,96 @@ class MainActivity : AppCompatActivity() {
 
         flashBtn.setOnClickListener {
             if (hasCameraPermission()) {
-                val nextState = !isFlashOn
-                toggleFlashLight(nextState)
-                // Show toast ONLY on button click
-                if (nextState) toast("Torch On") else toast("Torch Off")
+                if (flashMode == "NORMAL") {
+                    val nextState = !isFlashOn
+                    toggleFlashLight(nextState)
+                    if (nextState) toast("Torch On") else toast("Torch Off")
+                } else {
+                    // Rhythm mode logic: Start or Stop based on current state
+                    if (isFlashing) {
+                        stopRhythmFlash()
+                        toast("Rhythm Stopped")
+                    } else {
+                        startRhythmFlash()
+                        toast("Rhythm Started")
+                    }
+                }
             } else {
                 requestCameraPermission()
             }
+        }
+
+        val flashModeBtn: CardView = findViewById(R.id.flash_mode_card)
+        flashModeBtn.setOnClickListener {
+            showFlashModeDialog()
+        }
+        
+        //Handling Flashing Speed
+        frequencySeekBar = findViewById(R.id.seekBar)
+        frequencySeekBar.max = 100
+        frequencySeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                // convert progress to delay (inverse relationship: more progress = less delay)
+                blinkInterval = (1000 - progress * 9L).coerceAtLeast(50L)
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
+
+        //Handle Notification Services
+        notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+
+        callSwitch = findViewById(R.id.call_switch)
+        messageSwitch = findViewById(R.id.sms_switch)
+
+        callSwitch.setOnCheckedChangeListener { buttonView, isChecked ->
+            if (!hasDndPermission()) {
+                if (isChecked) {
+                    buttonView.isChecked = false
+                    requestDndPermission()
+                }
+                return@setOnCheckedChangeListener
+            }
+
+            // Note: Android's setInterruptionFilter applies to the entire device.
+            // There is no standard API to mute *only* calls or *only* SMS via DND filter.
+            // This toggle now handles its own state logic.
+            if (isChecked) {
+                notificationManager.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_PRIORITY)
+                toast("Calls Muted")
+            } else {
+                // Only disable DND if the other switch is also off
+                if (!messageSwitch.isChecked) {
+                    notificationManager.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_ALL)
+                }
+                toast("Calls Allowed")
+            }
+        }
+
+        messageSwitch.setOnCheckedChangeListener { buttonView, isChecked ->
+            if (!hasDndPermission()) {
+                if (isChecked) {
+                    buttonView.isChecked = false
+                    requestDndPermission()
+                }
+                return@setOnCheckedChangeListener
+            }
+
+            if (isChecked) {
+                notificationManager.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_PRIORITY)
+                toast("Messages Muted")
+            } else {
+                // Only disable DND if the other switch is also off
+                if (!callSwitch.isChecked) {
+                    notificationManager.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_ALL)
+                }
+                toast("Messages Allowed")
+            }
+        }
+
+        val appSelectionCard: CardView = findViewById(R.id.app_selection_card)
+        appSelectionCard.setOnClickListener {
+            toast("Feature Coming Soon")
         }
     }
 
@@ -97,7 +208,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateButtonImage(button: ImageButton, cardView: MaterialCardView) {
-        if (isFlashOn) {
+        if (isFlashOn || isFlashing) {
             button.setImageResource(R.drawable.power_on)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 cardView.outlineSpotShadowColor = ContextCompat.getColor(this, R.color.elevate_color_on)
@@ -112,18 +223,16 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun hasCameraPermission(): Boolean =
-        ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+    private fun hasCameraPermission(): Boolean = ContextCompat.checkSelfPermission(
+        this, Manifest.permission.CAMERA
+    ) == PackageManager.PERMISSION_GRANTED
 
     private fun requestCameraPermission() {
         ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), CAMERA_REQUEST)
     }
 
     override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String?>,
-        grantResults: IntArray,
-        deviceId: Int
+        requestCode: Int, permissions: Array<out String?>, grantResults: IntArray, deviceId: Int
     ) {
         if (requestCode == CAMERA_REQUEST) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -137,8 +246,99 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        // Unregister callback to prevent memory leaks
         cameraManager.unregisterTorchCallback(torchCallback)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if (isFlashing) stopRhythmFlash()
+    }
+
+    private fun startRhythmFlash() {
+        if (isFlashing) return
+        val id = cameraId ?: run {
+            toast("Flash not available")
+            return
+        }
+        isFlashing = true
+        // Set UI to ON state once when starting rhythm
+        updateButtonImage(flashBtn, flashBtnCard)
+
+        flashRunnable = object : Runnable {
+            var currentTorchState = false
+            override fun run() {
+                try {
+                    currentTorchState = !currentTorchState
+                    cameraManager.setTorchMode(id, currentTorchState)
+                    handler.postDelayed(this, blinkInterval)
+                } catch (e: Exception) {
+                    stopRhythmFlash()
+                    toast("Flash error")
+                }
+            }
+        }
+        handler.post(flashRunnable!!)
+    }
+
+    private fun stopRhythmFlash() {
+        flashRunnable?.let { handler.removeCallbacks(it) }
+        try {
+            cameraId?.let { cameraManager.setTorchMode(it, false) }
+        } catch (_: Exception) {}
+        isFlashing = false
+        isFlashOn = false
+        // Reset UI to OFF state
+        updateButtonImage(flashBtn, flashBtnCard)
+    }
+
+    private fun showFlashModeDialog() {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_flash_mode, null)
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogView)
+            .setCancelable(true)
+            .create()
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+
+        val radioGroup = dialogView.findViewById<RadioGroup>(R.id.radioGroup)
+        val normalRadio = dialogView.findViewById<RadioButton>(R.id.normal_mode)
+        val rhythmRadio = dialogView.findViewById<RadioButton>(R.id.rhythm_mode)
+
+        // Set initial state based on current flashMode
+        if (flashMode == "RHYTHM") rhythmRadio.isChecked = true else normalRadio.isChecked = true
+
+        normalRadio.setOnClickListener {
+            if (flashMode != "NORMAL") {
+                stopRhythmFlash()
+                if (isFlashOn) toggleFlashLight(false)
+                flashMode = "NORMAL"
+                toast("Normal Mode Selected")
+            }
+            dialog.dismiss()
+        }
+
+        rhythmRadio.setOnClickListener {
+            if (flashMode != "RHYTHM") {
+                stopRhythmFlash()
+                if (isFlashOn) toggleFlashLight(false)
+                flashMode = "RHYTHM"
+                toast("Rhythm Mode Selected")
+                // Reset UI to OFF state since we stopped everything
+                updateButtonImage(flashBtn, flashBtnCard)
+            }
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
+
+    private fun hasDndPermission(): Boolean {
+        return notificationManager.isNotificationPolicyAccessGranted
+    }
+
+    private fun requestDndPermission() {
+        val intent = Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS)
+        startActivity(intent)
+        toast("Please allow Do Not Disturb access")
     }
 
     fun toast(message: String) {

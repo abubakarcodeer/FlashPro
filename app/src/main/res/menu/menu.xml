@@ -8,10 +8,7 @@
         android:id="@+id/privacy"
         android:icon="@drawable/baseline_privacy_tip_24"
         android:title="@string/privacy_policy" />
-    <item
-        android:id="@+id/notification"
-        android:icon="@drawable/baseline_notifications_active_24"
-        android:title="@string/app_notification" />
+
     <item
         android:id="@+id/share"
         android:icon="@drawable/baseline_share_24"

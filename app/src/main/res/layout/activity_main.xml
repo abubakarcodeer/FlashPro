@@ -78,7 +78,7 @@
             android:layout_marginTop="50dp"
             android:columnCount="2"
             android:paddingTop="12dp"
-            android:paddingHorizontal="22dp"
+            android:paddingHorizontal="18dp"
             android:rowCount="3"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -144,10 +144,11 @@
                         app:layout_constraintTop_toBottomOf="@+id/view" />
 
                     <Switch
+                        android:id="@+id/call_switch"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_margin="4dp"
-                        android:checked="true"
+                        android:checked="false"
                         android:trackTint="@color/switch_background"
                         android:thumbTint="#848484"
                         app:layout_constraintEnd_toEndOf="parent"
@@ -217,10 +218,11 @@
                         app:layout_constraintTop_toBottomOf="@+id/view2" />
 
                     <Switch
+                        android:id="@+id/sms_switch"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_margin="3dp"
-                        android:checked="true"
+                        android:checked="false"
                         android:trackTint="@color/switch_background"
                         android:thumbTint="#848484"
                         app:layout_constraintEnd_toEndOf="parent"
@@ -230,6 +232,7 @@
             </androidx.cardview.widget.CardView>
 
             <androidx.cardview.widget.CardView
+                android:id="@+id/flash_mode_card"
                 android:layout_width="0dp"
                 android:layout_height="100dp"
                 android:layout_columnWeight="1"
@@ -299,6 +302,7 @@
             </androidx.cardview.widget.CardView>
 
             <androidx.cardview.widget.CardView
+                android:id="@+id/app_selection_card"
                 android:layout_width="0dp"
                 android:layout_height="100dp"
                 android:layout_columnWeight="1"
@@ -461,7 +465,7 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        android:background="@color/white"
+        android:background="?attr/navigation_background"
         android:fitsSystemWindows="true"
         app:headerLayout="@layout/header_layout"
         app:menu="@menu/menu" />

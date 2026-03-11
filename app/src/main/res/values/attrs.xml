@@ -2,6 +2,8 @@
 <resources>
     <!-- Define a custom attribute -->
     <attr name="viewColor" format="color"/>
+    <attr name="dialogViewColor" format="color"/>
+    <attr name="dialogColor" format="color"/>
     <attr name="seekbar_thumb_color" format="color"/>
     <attr name="seekbar_track_color" format="color"/>
     <attr name="seekbar_track_background_color" format="color"/>

@@ -20,9 +20,11 @@
     <string name="arrow_icon">arrow icon</string>
     <string name="rate_this_app">Rate this App</string>
     <string name="privacy_policy">Privacy Policy</string>
-    <string name="app_notification">App Notification</string>
     <string name="share_this_app">Share this App</string>
     <string name="exit_app">Exit App</string>
     <string name="flash_light_alert_text">Flash Light</string>
     <string name="power_off_icon">power off icon</string>
+    <string name="choosing_flasing_type">Choosing Flasing Type</string>
+    <string name="normal">Normal</string>
+    <string name="rhythm">Rhythm</string>
 </resources>
