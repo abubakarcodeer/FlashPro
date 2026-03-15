@@ -23,12 +23,13 @@ import com.google.android.material.navigation.NavigationView
 import android.app.NotificationManager
 import android.content.Intent
 import android.provider.Settings
+import android.view.View
 import android.widget.RadioButton
-import android.widget.RadioGroup
 import android.widget.SeekBar
 import android.widget.Switch
+import android.widget.TextView
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
-
 class MainActivity : AppCompatActivity() {
     private lateinit var drawerLayout: DrawerLayout
     private lateinit var cameraManager: CameraManager
@@ -38,6 +39,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var flashBtn: ImageButton
     private lateinit var flashBtnCard: MaterialCardView
     private lateinit var frequencySeekBar: SeekBar
+    private lateinit var seekBarTitle: TextView
+    private lateinit var minValueText: TextView
+    private lateinit var maxValueText: TextView
+    private lateinit var seekBarCard: CardView
+
     private val handler = Handler(Looper.getMainLooper())
     private var flashRunnable: Runnable? = null
     private var isFlashing = false
@@ -66,6 +72,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
@@ -107,17 +114,13 @@ class MainActivity : AppCompatActivity() {
         flashBtn.setOnClickListener {
             if (hasCameraPermission()) {
                 if (flashMode == "NORMAL") {
-                    val nextState = !isFlashOn
-                    toggleFlashLight(nextState)
-                    if (nextState) toast("Torch On") else toast("Torch Off")
+                    toggleFlashLight(!isFlashOn)
                 } else {
                     // Rhythm mode logic: Start or Stop based on current state
                     if (isFlashing) {
                         stopRhythmFlash()
-                        toast("Rhythm Stopped")
                     } else {
                         startRhythmFlash()
-                        toast("Rhythm Started")
                     }
                 }
             } else {
@@ -129,15 +132,28 @@ class MainActivity : AppCompatActivity() {
         flashModeBtn.setOnClickListener {
             showFlashModeDialog()
         }
-        
-        //Handling Flashing Speed
+
+        //Handling Seekbar for Brightness and Speed
         frequencySeekBar = findViewById(R.id.seekBar)
-        frequencySeekBar.max = 100
+        seekBarTitle = findViewById(R.id.textView9)
+        minValueText = findViewById(R.id.min_value)
+        maxValueText = findViewById(R.id.max_value)
+        seekBarCard = findViewById(R.id.seekbar_card)
+
+        updateSeekBarUI()
+
         frequencySeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                // convert progress to delay (inverse relationship: more progress = less delay)
-                blinkInterval = (1000 - progress * 9L).coerceAtLeast(50L)
+                if (flashMode == "NORMAL") {
+                    if (isFlashOn) {
+                        updateBrightness(progress)
+                    }
+                } else {
+                    // convert progress to delay (inverse relationship: more progress = less delay)
+                    blinkInterval = (1000 - progress * 9L).coerceAtLeast(50L)
+                }
             }
+
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
@@ -158,8 +174,6 @@ class MainActivity : AppCompatActivity() {
             }
 
             // Note: Android's setInterruptionFilter applies to the entire device.
-            // There is no standard API to mute *only* calls or *only* SMS via DND filter.
-            // This toggle now handles its own state logic.
             if (isChecked) {
                 notificationManager.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_PRIORITY)
                 toast("Calls Muted")
@@ -199,9 +213,73 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    @SuppressLint("SetTextI18n")
+    private fun updateSeekBarUI() {
+        if (flashMode == "NORMAL") {
+            val isSupported = isBrightnessControlSupported()
+            if (isSupported) {
+                seekBarCard.visibility = View.VISIBLE
+                seekBarTitle.text = "Flash Brightness"
+                minValueText.text = "Low"
+                maxValueText.text = "High"
+                frequencySeekBar.max = 10 
+                frequencySeekBar.progress = 5
+            } else {
+                seekBarCard.visibility = View.GONE
+            }
+        } else {
+            // Rhythm mode always shows the seekbar for speed
+            seekBarCard.visibility = View.VISIBLE
+            seekBarTitle.text = "Flashing Speed"
+            minValueText.text = "0 ms"
+            maxValueText.text = "1000 ms"
+            frequencySeekBar.max = 100
+            frequencySeekBar.progress = 20
+        }
+    }
+    
+    private fun isBrightnessControlSupported(): Boolean {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            return try {
+                val characteristics = cameraManager.getCameraCharacteristics(cameraId!!)
+                val maxLevel = characteristics.get(android.hardware.camera2.CameraCharacteristics.FLASH_INFO_STRENGTH_MAXIMUM_LEVEL) ?: 1
+                maxLevel > 1
+            } catch (e: Exception) {
+                false
+            }
+        }
+        return false
+    }
+
+    private fun updateBrightness(level: Int) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            try {
+                val characteristics = cameraManager.getCameraCharacteristics(cameraId!!)
+                val maxLevel = characteristics.get(android.hardware.camera2.CameraCharacteristics.FLASH_INFO_STRENGTH_MAXIMUM_LEVEL) ?: 1
+                
+                if (maxLevel > 1) {
+                    // Scale progress level (0-10) to camera max level
+                    val scaledLevel = (level * maxLevel / 10).coerceIn(1, maxLevel)
+                    cameraManager.turnOnTorchWithStrengthLevel(cameraId!!, scaledLevel)
+                } else {
+                    cameraManager.setTorchMode(cameraId!!, true)
+                }
+            } catch (e: Exception) {
+                cameraManager.setTorchMode(cameraId!!, true)
+            }
+        } else {
+            // Strength control requires API 33+
+            cameraManager.setTorchMode(cameraId!!, true)
+        }
+    }
+
     private fun toggleFlashLight(state: Boolean) {
         try {
-            cameraManager.setTorchMode(cameraId ?: return, state)
+            if (state && flashMode == "NORMAL" && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                updateBrightness(frequencySeekBar.progress)
+            } else {
+                cameraManager.setTorchMode(cameraId ?: return, state)
+            }
         } catch (e: Exception) {
             toast("Flash Light not Supported")
         }
@@ -299,7 +377,6 @@ class MainActivity : AppCompatActivity() {
             .create()
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
 
-        val radioGroup = dialogView.findViewById<RadioGroup>(R.id.radioGroup)
         val normalRadio = dialogView.findViewById<RadioButton>(R.id.normal_mode)
         val rhythmRadio = dialogView.findViewById<RadioButton>(R.id.rhythm_mode)
 
@@ -311,6 +388,7 @@ class MainActivity : AppCompatActivity() {
                 stopRhythmFlash()
                 if (isFlashOn) toggleFlashLight(false)
                 flashMode = "NORMAL"
+                updateSeekBarUI()
                 toast("Normal Mode Selected")
             }
             dialog.dismiss()
@@ -321,6 +399,7 @@ class MainActivity : AppCompatActivity() {
                 stopRhythmFlash()
                 if (isFlashOn) toggleFlashLight(false)
                 flashMode = "RHYTHM"
+                updateSeekBarUI()
                 toast("Rhythm Mode Selected")
                 // Reset UI to OFF state since we stopped everything
                 updateButtonImage(flashBtn, flashBtnCard)

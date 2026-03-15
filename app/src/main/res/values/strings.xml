@@ -15,7 +15,7 @@
     <string name="speed_meter">speed meter</string>
     <string name="select">Select</string>
     <string name="_0_ms">0 ms</string>
-    <string name="_30_ms">30 ms</string>
+    <string name="_30_ms">100 ms</string>
     <string name="flashing_speed">Flashing Speed</string>
     <string name="arrow_icon">arrow icon</string>
     <string name="rate_this_app">Rate this App</string>

@@ -14,6 +14,7 @@
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
+            android:layout_marginTop="15dp"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:layout_constraintEnd_toEndOf="parent"
@@ -56,7 +57,7 @@
             android:outlineSpotShadowColor="@color/elevate_color"
             app:cardBackgroundColor="@color/white"
             app:cardCornerRadius="70dp"
-            app:cardElevation="20dp"
+            app:cardElevation="10dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/toolbar">
@@ -238,6 +239,7 @@
                 android:layout_columnWeight="1"
                 android:layout_marginStart="2dp"
                 android:layout_marginTop="10dp"
+                android:layout_marginBottom="20dp"
                 android:layout_marginEnd="5dp"
                 android:elevation="10dp"
                 app:cardBackgroundColor="?attr/cardBackgroundColor"
@@ -372,12 +374,12 @@
             </androidx.cardview.widget.CardView>
 
             <androidx.cardview.widget.CardView
+                android:id="@+id/seekbar_card"
                 android:layout_width="0dp"
                 android:layout_height="110dp"
                 android:layout_columnSpan="2"
                 android:layout_columnWeight="1"
                 android:layout_marginStart="2dp"
-                android:layout_marginTop="20dp"
                 android:layout_marginEnd="5dp"
                 android:layout_marginBottom="5dp"
                 android:elevation="10dp"
@@ -425,11 +427,11 @@
                         android:layout_height="wrap_content"
                         android:layout_marginHorizontal="15dp"
                         android:layout_marginTop="10dp"
-                        android:max="30"
+                        android:max="100"
                         android:thumbTint="?attr/seekbar_thumb_color"
                         android:progressTint="?attr/seekbar_track_color"
                         android:progressBackgroundTint="?attr/seekbar_track_background_color"
-                        android:progress="5"
+                        android:progress="20"
                         app:layout_constraintTop_toBottomOf="@+id/view5" />
 
                     <TextView
