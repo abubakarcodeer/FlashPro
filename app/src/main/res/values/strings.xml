@@ -27,4 +27,13 @@
     <string name="choosing_flasing_type">Choosing Flasing Type</string>
     <string name="normal">Normal</string>
     <string name="rhythm">Rhythm</string>
+    <string name="welcome_title">Welcome to FlashPro</string>
+    <string name="welcome_desc">The ultimate flashlight app with advanced features.</string>
+    <string name="alerts_title">Flash Alerts</string>
+    <string name="alerts_desc">Never miss a call or message with our flash notification alerts.</string>
+    <string name="custom_title">Customizable Modes</string>
+    <string name="custom_desc">Choose between Normal and Rhythm modes for your flashlight.</string>
+    <string name="get_started">Get Started</string>
+    <string name="next">Next</string>
+    <string name="skip">Skip</string>
 </resources>

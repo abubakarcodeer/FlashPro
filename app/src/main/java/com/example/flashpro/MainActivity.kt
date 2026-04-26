@@ -72,6 +72,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val sharedPreferences = getSharedPreferences("FlashProPrefs", MODE_PRIVATE)
+        val isFirstRun = sharedPreferences.getBoolean("isFirstRun", true)
+        if (isFirstRun) {
+            startActivity(Intent(this, OnboardingActivity::class.java))
+            finish()
+            return
+        }
+
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
