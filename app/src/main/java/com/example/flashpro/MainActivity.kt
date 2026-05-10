@@ -1,8 +1,6 @@
 package com.example.flashpro
 
-import android.Manifest
 import android.annotation.SuppressLint
-import android.content.pm.PackageManager
 import android.hardware.camera2.CameraManager
 import android.os.Build
 import android.os.Bundle
@@ -14,7 +12,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.cardview.widget.CardView
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
@@ -30,11 +27,11 @@ import android.widget.Switch
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 class MainActivity : AppCompatActivity() {
     private lateinit var drawerLayout: DrawerLayout
     private lateinit var cameraManager: CameraManager
     private var cameraId: String? = null
-    private val CAMERA_REQUEST = 100
     private var isFlashOn = false
     private lateinit var flashBtn: ImageButton
     private lateinit var flashBtnCard: MaterialCardView
@@ -120,19 +117,15 @@ class MainActivity : AppCompatActivity() {
         cameraManager.registerTorchCallback(torchCallback, Handler(Looper.getMainLooper()))
 
         flashBtn.setOnClickListener {
-            if (hasCameraPermission()) {
-                if (flashMode == "NORMAL") {
-                    toggleFlashLight(!isFlashOn)
-                } else {
-                    // Rhythm mode logic: Start or Stop based on current state
-                    if (isFlashing) {
-                        stopRhythmFlash()
-                    } else {
-                        startRhythmFlash()
-                    }
-                }
+            if (flashMode == "NORMAL") {
+                toggleFlashLight(!isFlashOn)
             } else {
-                requestCameraPermission()
+                // Rhythm mode logic: Start or Stop based on current state
+                if (isFlashing) {
+                    stopRhythmFlash()
+                } else {
+                    startRhythmFlash()
+                }
             }
         }
 
@@ -252,7 +245,7 @@ class MainActivity : AppCompatActivity() {
                 val characteristics = cameraManager.getCameraCharacteristics(cameraId!!)
                 val maxLevel = characteristics.get(android.hardware.camera2.CameraCharacteristics.FLASH_INFO_STRENGTH_MAXIMUM_LEVEL) ?: 1
                 maxLevel > 1
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 false
             }
         }
@@ -272,7 +265,7 @@ class MainActivity : AppCompatActivity() {
                 } else {
                     cameraManager.setTorchMode(cameraId!!, true)
                 }
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 cameraManager.setTorchMode(cameraId!!, true)
             }
         } else {
@@ -288,7 +281,7 @@ class MainActivity : AppCompatActivity() {
             } else {
                 cameraManager.setTorchMode(cameraId ?: return, state)
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             toast("Flash Light not Supported")
         }
     }
@@ -307,27 +300,6 @@ class MainActivity : AppCompatActivity() {
                 cardView.outlineAmbientShadowColor = ContextCompat.getColor(this, R.color.elevate_color)
             }
         }
-    }
-
-    private fun hasCameraPermission(): Boolean = ContextCompat.checkSelfPermission(
-        this, Manifest.permission.CAMERA
-    ) == PackageManager.PERMISSION_GRANTED
-
-    private fun requestCameraPermission() {
-        ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), CAMERA_REQUEST)
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int, permissions: Array<out String?>, grantResults: IntArray, deviceId: Int
-    ) {
-        if (requestCode == CAMERA_REQUEST) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                toast("Permission Granted")
-            } else {
-                toast("Permission Required!")
-            }
-        }
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults, deviceId)
     }
 
     override fun onDestroy() {
@@ -357,7 +329,7 @@ class MainActivity : AppCompatActivity() {
                     currentTorchState = !currentTorchState
                     cameraManager.setTorchMode(id, currentTorchState)
                     handler.postDelayed(this, blinkInterval)
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     stopRhythmFlash()
                     toast("Flash error")
                 }
@@ -423,9 +395,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun requestDndPermission() {
-        val intent = Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS)
-        startActivity(intent)
-        toast("Please allow Do Not Disturb access")
+        MaterialAlertDialogBuilder(this, R.style.CustomAlertDialog)
+            .setTitle("Permission Required")
+            .setMessage("To mute calls and messages when the flash alerts are active, FlashPro needs 'Do Not Disturb' access. We do not collect or share any of your notification data.")
+            .setPositiveButton("Grant") { _, _ ->
+                val intent = Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS)
+                startActivity(intent)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     fun toast(message: String) {

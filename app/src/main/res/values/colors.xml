@@ -11,5 +11,6 @@
     <color name="view_color_light">#3D9B9A9A</color>
     <color name="view_color_dark">#000000</color>
     <color name="seekbar_color">#F09A1A</color>
+    <color name="gray">#808080</color>
 
 </resources>
