@@ -12,4 +12,12 @@
 /captures
 .externalNativeBuild
 .cxx
-local.properties
+
+# Key files and sensitive data
+key
+*.jks
+*.keystore
+*.key
+*.p12
+google-services.json
+/.idea/markdown.xml
